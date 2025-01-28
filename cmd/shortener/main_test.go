@@ -13,7 +13,7 @@ func Test_main(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	reqGet, err := http.NewRequest("POST", "/", nil)
+	reqGet, err := http.NewRequest("GET", "/{shortLink}", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
