@@ -5,6 +5,9 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 var (
@@ -13,13 +16,6 @@ var (
 )
 
 func HandlerPost(w http.ResponseWriter, r *http.Request) {
-	// body, err := io.ReadAll(r.Body)
-	// if err != nil {
-	// 	http.Error(w, "Не удалось прочитать тело запроса", http.StatusBadRequest)
-	// 	return
-	// }
-	// url := string(body)
-
 	symbols := "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890"
 	shortPart := []string{}
 
@@ -43,13 +39,13 @@ func HandlerPost(w http.ResponseWriter, r *http.Request) {
 func HandlerGet(w http.ResponseWriter, r *http.Request) {
 	shortLink := r.URL.Path[len("/"):]
 	fullLink := links[shortLink]
-	// w.WriteHeader(http.StatusCreated)
-	// w.Write([]byte(fullLink))
 	http.Redirect(w, r, fullLink, http.StatusTemporaryRedirect)
 }
 
 func main() {
-	http.HandleFunc("/", HandlerPost)
-	http.HandleFunc("/{shortLink}", HandlerGet)
-	http.ListenAndServe(":8080", nil)
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+	r.Get("/", HandlerPost)
+	r.Get("/{shortLink}", HandlerGet)
+	http.ListenAndServe(":8080", r)
 }
