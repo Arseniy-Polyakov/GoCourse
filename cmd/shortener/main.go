@@ -4,6 +4,7 @@ import (
 	"flag"
 	"math/rand"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
@@ -29,12 +30,17 @@ func HandlerPost(w http.ResponseWriter, r *http.Request) {
 
 	shortPartStr := strings.Join(shortPart, "")
 
-	baseURL := flag.String("b", ":8080", "BASE_URL")
-	flag.Parse()
-	if baseURL != nil {
-		shortLink = "http://localhost:" + *baseURL + "/" + shortPartStr
+	if _, ok := os.LookupEnv("BASE_URL"); ok {
+		baseURL = os.Getenv("BASE_URL")
+		shortLink = "http://localhost:" + baseURL + "/" + shortPartStr
 	} else {
-		shortLink = "http://localhost:8080/" + shortPartStr
+		baseURL := flag.String("b", ":8080", "BASE_URL")
+		flag.Parse()
+		if baseURL != nil {
+			shortLink = "http://localhost:" + *baseURL + "/" + shortPartStr
+		} else {
+			shortLink = "http://localhost:8080/" + shortPartStr
+		}
 	}
 
 	links[shortPartStr] = urlYandex
@@ -53,16 +59,23 @@ func HandlerGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	port := flag.String("a", ":8080", "SERVER_ADDRESS")
-	flag.Parse()
-	if port != nil {
+	if _, ok := os.LookupEnv("SERVER_ADDRESS"); ok {
+		port := os.Getenv("SERVER_ADDRESS")
 		http.HandleFunc("/", HandlerPost)
 		http.HandleFunc("/{shortLink}", HandlerGet)
-		http.ListenAndServe(*port, nil)
+		http.ListenAndServe(":"+port, nil)
 	} else {
-		http.HandleFunc("/", HandlerPost)
-		http.HandleFunc("/{shortLink}", HandlerGet)
-		http.ListenAndServe(":8080", nil)
+		port := flag.String("a", ":8080", "SERVER_ADDRESS")
+		flag.Parse()
+		if port != nil {
+			http.HandleFunc("/", HandlerPost)
+			http.HandleFunc("/{shortLink}", HandlerGet)
+			http.ListenAndServe(*port, nil)
+		} else {
+			http.HandleFunc("/", HandlerPost)
+			http.HandleFunc("/{shortLink}", HandlerGet)
+			http.ListenAndServe(":8080", nil)
+		}
 	}
 }
 
