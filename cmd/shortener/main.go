@@ -7,6 +7,9 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 var (
@@ -61,20 +64,26 @@ func HandlerGet(w http.ResponseWriter, r *http.Request) {
 func main() {
 	if _, ok := os.LookupEnv("SERVER_ADDRESS"); ok {
 		port := os.Getenv("SERVER_ADDRESS")
-		http.HandleFunc("/", HandlerPost)
-		http.HandleFunc("/{shortLink}", HandlerGet)
-		http.ListenAndServe(":"+port, nil)
+		r := chi.NewRouter()
+		r.Use(middleware.Logger)
+		r.Get("/", HandlerPost)
+		r.Get("/{shortLink}", HandlerGet)
+		http.ListenAndServe(":"+port, r)
 	} else {
 		port := flag.String("a", ":8080", "SERVER_ADDRESS")
 		flag.Parse()
 		if port != nil {
-			http.HandleFunc("/", HandlerPost)
-			http.HandleFunc("/{shortLink}", HandlerGet)
-			http.ListenAndServe(*port, nil)
+			r := chi.NewRouter()
+			r.Use(middleware.Logger)
+			r.Get("/", HandlerPost)
+			r.Get("/{shortLink}", HandlerGet)
+			http.ListenAndServe(*port, r)
 		} else {
-			http.HandleFunc("/", HandlerPost)
-			http.HandleFunc("/{shortLink}", HandlerGet)
-			http.ListenAndServe(":8080", nil)
+			r := chi.NewRouter()
+			r.Use(middleware.Logger)
+			r.Get("/", HandlerPost)
+			r.Get("/{shortLink}", HandlerGet)
+			http.ListenAndServe(":8080", r)
 		}
 	}
 }
