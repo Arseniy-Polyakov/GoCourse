@@ -1,10 +1,10 @@
 package config
 
-type ConfigData struct {
-	serverAddress string
-	baseURL       string
+type Config struct {
+	ServerAddress string
+	BaseURL       string
 }
 
-func NewConfig() *ConfigData {
-	return &ConfigData{}
+func NewConfig() *Config {
+	return &Config{}
 }
